@@ -218,7 +218,7 @@ class CupsPrinter(object):
     def _default(self):
         changes = []
         is_default = self.state['default_printer'] == self.name
-        if self.params['default'] and not is_default:
+        if self.params['is_default'] and not is_default:
             changes.append("Default Printer")
             if not self.check_mode:
                 self.connection.setDefault(self.name)
@@ -338,7 +338,7 @@ def main():
                        choices=["present", "absent", "enabled", "disabled"]),
             driver=dict(default=None),
             description=dict(default=""),
-            default=dict(default=False),
+            is_default=dict(default=False, type="bool"),
             location=dict(default=""),
             type=dict(default="printer", choices=["printer", "class"]),
             uri=dict(default="file:///dev/null"),
