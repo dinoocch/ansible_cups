@@ -215,10 +215,33 @@ class CupsPrinter(object):
                         self.params['users_denied'])
         return changes
 
+    def _default(self):
+        changes = []
+        is_default = self.state['default_printer'] == self.name
+        if self.params['default'] and not is_default:
+            changes.append("Default Printer")
+            if not self.check_mode:
+                self.connection.setDefault(self.name)
+        return changes
+
+    def _shared(self):
+        changes = []
+        is_shared = self.state.get('printer-is-shared', False)
+        if self.params['shared'] and not is_shared:
+            changes.append("Shared Printer")
+            if not self.check_mode:
+                self.connection.setPrinterShared(self.name, True)
+        elif not self.params['shared'] and is_shared:
+            changes.append("UnShared Printer")
+            if not self.check_mode:
+                self.connection.setPrinterShared(self.name, True)
+        return changes
+
     def get_information(self):
         state = {}
         connection = self.connection
         printers = connection.getPrinters()
+        state['default_printer'] = connection.getDefault()
 
         if self.type == 'Class':
             classes = connection.getClasses()
@@ -248,7 +271,6 @@ class CupsPrinter(object):
         for key, value in printer_definition.items():
             state[key] = value
 
-        state['default_printer'] = connection.getDefault()
         return state
 
     def enforce_params(self):
@@ -290,7 +312,14 @@ class CupsPrinter(object):
         # error policy
         changes.extend(self._errorPolicy())
 
+        # users
         changes.extend(self._users())
+
+        # default
+        changes.extend(self._default())
+
+        # shared
+        changes.extend(self._shared())
 
         # set default options
         for option, value in self.params['options'].items():
@@ -309,11 +338,13 @@ def main():
                        choices=["present", "absent", "enabled", "disabled"]),
             driver=dict(default=None),
             description=dict(default=""),
+            default=dict(default=False),
             location=dict(default=""),
             type=dict(default="printer", choices=["printer", "class"]),
             uri=dict(default="file:///dev/null"),
             members=dict(default=[], type="list"),
             policy=dict(default="default"),
+            shared=dict(default=False),
             error_policy=dict(default="abort-job"),
             users_allowed=dict(default=["all"], type="list"),
             users_denied=dict(default=["none"], type="list"),
