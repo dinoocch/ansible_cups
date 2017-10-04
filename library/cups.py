@@ -103,7 +103,7 @@ class CupsPrinter(object):
                 add_members = list(wanted_members - current_members)
                 del_members = list(current_members - wanted_members)
                 for queue in add_members:
-                    self.connection.addClassMember(queue, self.name)
+                    self.connection.addPrinterToClass(queue, self.name)
                 for queue in del_members:
                     self.connection.deletePrinterFromClass(queue,
                                                            self.name)
@@ -243,7 +243,7 @@ class CupsPrinter(object):
         printers = connection.getPrinters()
         state['default_printer'] = connection.getDefault()
 
-        if self.type == 'Class':
+        if self.type == 'class':
             classes = connection.getClasses()
             if self.name not in classes:
                 state['members'] = []
@@ -278,13 +278,13 @@ class CupsPrinter(object):
         changes = []
 
         # Existence and Members
-        if self.type == 'Class':
+        if self.type == 'class':
             if self.params['state'] == 'absent':
                 changes = ['Class Deleted']
                 if not check:
                     self.connection.deleteClass(self.name)
                     return changes
-                changes.extend(self._class_members())
+            changes.extend(self._class_members())
         else:
             if (self.params['state'] == 'absent' and
                     not self.state['queue_exist']):
