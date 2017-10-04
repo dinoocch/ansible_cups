@@ -111,7 +111,7 @@ class CupsPrinter(object):
 
     def _queue_exist(self):
         changes = []
-        if (self.params['state'] == 'present' and
+        if (self.params['state'] in ['present', 'enabled'] and
                 not self.state['queue_exist']):
             changes.append("Queue Added")
             if not self.check_mode:
