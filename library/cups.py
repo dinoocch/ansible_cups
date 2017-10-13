@@ -136,7 +136,10 @@ class CupsPrinter(object):
         changes = []
         if (self.state.get('ppdname', None) != self.params['driver'] and
                 self.params['driver'] is not None):
-            changes.append('driver')
+            changes.append('driver: {0} -> {1}'.format(self.state.get('ppdname',
+                                                                      None),
+                                                       self.params['driver']))
+
             if not self.check_mode:
                 self.connection.addPrinter(self.name,
                                            ppdname=self.params['driver'])
@@ -261,6 +264,8 @@ class CupsPrinter(object):
         else:
             state['enabled'] = True
         printer_make = printer_definition['printer-make-and-model']
+        if printer_make.endswith(' (recommended)'):
+            printer_make = printer_make[:-14]
         try:
             state['ppdname'] = connection.getPPDs(
                     ppd_make_and_model=printer_make)
